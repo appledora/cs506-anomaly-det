@@ -43,3 +43,18 @@ Modern image classifiers are trained on datasets that contain many kinds of prob
     - In H3, we test whether training dynamics features can successfully distinguish between clean-but-hard and near-miss mislabeled examples, even when uncertainty is similar.
         - Models: Logistic regression, SVM, or a simple feedforward neural network using training dynamics features (e.g., loss trajectory statistics).
         - Evaluation: Precision, recall, and F1-score for distinguishing clean-but-hard from near-miss mislabeled examples, expecting significantly improved performance compared to H2.
+
+
+
+6. **Proposed Timeline**
+
+| Week  | Main Tasks                                              |
+| ----- | ------------------------------------------------------- | 
+| 1     | Dataset preparation, baseline model, noise injection    | 
+| 2     | Train clean ViT/ResNet, extract geometry features       | 
+| 3     | Train noisy ViT/ResNet with dynamics logging            | 
+| 4     | Extract uncertainty & dynamics features, merge datasets | 
+| 5     | Test H1 (geometry) and H2 (uncertainty)                 | 
+| 6     | Test H3 (dynamics) and relevant ablation study                   | 
+| 7     | Final visualizations and analysis                       | 
+| 8     | Documentation, testing, presentation                    | 
