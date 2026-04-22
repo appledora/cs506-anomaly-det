@@ -26,12 +26,13 @@ Modern image classifiers are trained on datasets containing heterogeneous proble
 ## Synthetic Dataset Composition
 
 ![alt text](image-7.png)
+![alt text](image-9.png)
 ### 1. Clean (35%)
 Correctly labeled samples serving as the ground truth baseline. These represent ideal training data with aligned image content and assigned label.
 ![alt text](image.png)
 ### 2. Near-Miss Label Errors (15%)
 Semantically plausible but incorrect labels.
-![alt text](data_vit/near_miss_samples.png)
+![alt text](image-10.png)
 For each sample, extract ViT embedding and compute cosine similarity to all class centroids. Replace true label with one of the k=3 nearest classes (excluding true class).
 
 **Examples**: dog → cat, truck → automobile, deer → horse
@@ -40,7 +41,7 @@ For each sample, extract ViT embedding and compute cosine similarity to all clas
 
 ### 3. Gross Label Errors (10%)
 Semantically implausible label flips.
-![alt text](data_vit/gross_samples.png)
+![alt text](image-11.png)
 For each sample, select from the k=3 furthest classes in ViT embedding space.
 
 **Examples**: frog → truck, bird → automobile, cat → ship
@@ -58,7 +59,7 @@ Sample images from MIT Indoor Scenes dataset (67 categories: corridor, restauran
 
 ### 5. Clean-Hard (15%)
 Correctly labeled but atypically difficult samples.
-![alt text](data_vit/clean_hard_samples.png)
+![alt text](image-12.png)
 Compute cosine distance from each sample to its true class centroid in ViT space. Select the top 15% most distant samples within each class while preserving correct labels.
 
 **Examples**: Occluded objects, unusual viewpoints, edge cases within a category
@@ -76,7 +77,7 @@ Replace true label with a random class sampled uniformly from the label set.
 
 ### 7. Ambiguous (5%)
 Samples where human annotators disagree.
-![alt text](data_vit/human_disagreements.png)
+![alt text](image-14.png)
 Identify samples from CIFAR-N datasets where multiple annotators provided different labels. Assign one of the human-provided labels (not necessarily the original CIFAR label).
 
 **Examples**: Images that could reasonably be labeled as multiple classes
@@ -85,7 +86,7 @@ Identify samples from CIFAR-N datasets where multiple annotators provided differ
 
 ### 8. Corrupted (5%)
 Visually degraded images with correct labels.
-![alt text](data_vit/corrupted_samples.png)
+![alt text](image-13.png)
 Apply one of four corruptions randomly:
 - Gaussian noise: σ=25
 - Gaussian blur: σ=1.5
