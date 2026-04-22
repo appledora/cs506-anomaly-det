@@ -1,0 +1,11 @@
+Hypothesis,Task,Feature Type,Expected,F1-Score (LR),Status
+H1,OOD vs Clean,Geometry,HIGH,0.503736705127813,✗
+H1,Gross vs Clean,Geometry,MODERATE-HIGH,0.5010864379446354,✗
+H1,Near-Miss vs Clean,Geometry,LOW,0.5144885542128105,✓
+H1,Clean-Hard vs Clean,Geometry,LOW,0.5099172663945402,✓
+H2,Gross vs Clean,Uncertainty,MODERATE,0.49389581044681197,✓
+H2,Random-Flip vs Clean,Uncertainty,MODERATE,0.47113719021648615,✓
+H2,Near-Miss vs Clean-Hard,Uncertainty,LOW,0.4902175886358712,✓
+H3,Near-Miss vs Clean-Hard,Dynamics,HIGH (better than H2),0.4825818533282509,✗
+H4,Corrupted vs Clean,Image Quality,HIGH,0.4549012024726168,✗
+H4,Ambiguous vs Clean,Label Agreement,HIGH,0.9615739082393716,✓
