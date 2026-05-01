@@ -388,10 +388,10 @@ Classifiers:  Random Forest, XGBoost, Logistic Regression, SVM, KNN.
 The original expectation was that geometry features would work well for OOD and gross errors, but would struggle on near-miss and clean-hard samples. The binary results partly supported this pattern only in a weak sense.
 | H1 task | Expected | Best model | Best macro F1 | Observation |
 |---|---|---|---:|---|
-| OOD vs Clean | High  | Decision Tree  | 0.5165  | Weak support only. |
-| Gross vs Clean | Moderate to high  | Decision Tree  | 0.5193  | Weak support only. |
-| Near-Miss vs Clean | Low  | Decision Tree  | 0.5214  | Matches expectation, but still weak overall. |
-| Clean-Hard vs Clean | Low  | Decision Tree  | 0.5265  | Matches expectation, but still weak overall. |
+| OOD vs Clean | High  | Decision Tree  | 0.5165  | Weak |
+| Gross vs Clean | Moderate to high  | Decision Tree  | 0.5193  | Weak |
+| Near-Miss vs Clean | Low  | Decision Tree  | 0.5214  | Weak |
+| Clean-Hard vs Clean | Low  | Decision Tree  | 0.5265  | Weak |
 
 
 ![alt text](image-16.png)
@@ -404,9 +404,9 @@ The uncertainty hypothesis expected better performance on medium-difficulty anom
 **Results**:
 | H2 task | Best model | Best macro F1 | Observation |
 |---|---|---:|---|
-| Gross vs Clean  | Logistic Regression  | 0.4939  | Partial success |
-| Random-Flip vs Clean  | KNN  | 0.4831  | Partial success |
-| Near-Miss vs Clean-Hard  | KNN  | 0.5018  | Partial success |
+| Gross vs Clean  | Logistic Regression  | 0.4939  | Weak |
+| Random-Flip vs Clean  | KNN  | 0.4831  | Weak |
+| Near-Miss vs Clean-Hard  | KNN  | 0.5018  | Weak |
 
 
 ![alt text](image-17.png)
