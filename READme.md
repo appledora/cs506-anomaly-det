@@ -30,15 +30,10 @@ cd cs506-anomaly-det
 conda env create -f environment.yml -n cs506-anom || \
 conda env update -f environment.yml -n cs506-anom
 conda activate cs506-anom
-
-# Non-interactive run (recommended to reproduce figures/tables)
-jupyter nbconvert --to notebook --execute notebooks/01_data_prep.ipynb --ExecutePreprocessor.timeout=600
-jupyter nbconvert --to notebook --execute notebooks/02_feature_extraction.ipynb --ExecutePreprocessor.timeout=1800
-jupyter nbconvert --to notebook --execute notebooks/03_train_eval.ipynb --ExecutePreprocessor.timeout=7200
-
-# Or run interactively
-jupyter lab
+conda install -c conda-forge ipykernel
+python -m ipykernel install --user --name=<cs506-anom> --display-name "Python (cs506-anom)"
 ```
+Then select the "Python (cs506-anom)" kernel in Jupyter to run the notebooks.
 
 ### **Notebooks**
 - [`01_generate_synthetic_noisy_cifar_vit_clean.ipynb`](01_generate_synthetic_noisy_cifar_vit_clean.ipynb): Dataset generation and anomaly type injection
