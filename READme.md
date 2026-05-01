@@ -1,4 +1,7 @@
-# Anomaly Type Detection in Noisy Image Classification Datasets
+![alt text](image-15.png)
+# CS506: Data Science Tools and Applications [FINAL PROJECT]
+## Presentation Link
+[Youtube Video](https://youtu.be/d5nVEtlqg9s)
 
 ## Overview
 
@@ -7,9 +10,40 @@ Modern image classifiers are trained on datasets containing heterogeneous proble
 **Dataset Size**: 100,000 samples (50k CIFAR-10, 50k CIFAR-100)  
 **Models**: Two ViT-B/16 models (Clean ViT, Noisy ViT)  
 **Features**: 20 features across 5 families (Geometry, Image Quality, Uncertainty, Dynamics, Label Agreement)  
+**Hypotheses**: 4 hypotheses about which features detect which anomaly types  
+**Classifiers**: Random Forest, XGBoost, Logistic Regression, SVM, KNN (5-fold stratified CV)  
+**Metrics**: Per-class F1-score, macro F1, confusion matrix, feature importance analysis
 
 
+### Build and Run 
+1. **Clone the repository**:
+```bash
+git clone https://github.com/appledora/cs506-anomaly-det.git
+```
+2. **Navigate to the project directory**:
+```bash
+cd cs506-anomaly-det
+```
+3. **Install dependencies**:
+```bash
+# Create / update conda env
+conda env create -f environment.yml -n cs506-anom || \
+conda env update -f environment.yml -n cs506-anom
+conda activate cs506-anom
 
+# Non-interactive run (recommended to reproduce figures/tables)
+jupyter nbconvert --to notebook --execute notebooks/01_data_prep.ipynb --ExecutePreprocessor.timeout=600
+jupyter nbconvert --to notebook --execute notebooks/02_feature_extraction.ipynb --ExecutePreprocessor.timeout=1800
+jupyter nbconvert --to notebook --execute notebooks/03_train_eval.ipynb --ExecutePreprocessor.timeout=7200
+
+# Or run interactively
+jupyter lab
+```
+
+### **Notebooks**
+- [`01_generate_synthetic_noisy_cifar_vit_clean.ipynb`](01_generate_synthetic_noisy_cifar_vit_clean.ipynb): Dataset generation and anomaly type injection
+- [`02_dataset_analysis_vit.ipynb`](02_dataset_analysis_vit.ipynb): Visualize dataset composition, feature distributions, and preliminary insights on feature-anomaly relationships.
+- [`03_feature_extraction_and_hypothesis_testing_v2.ipynb`](03_feature_extraction_and_hypothesis_testing_v2.ipynb): Train classifiers, evaluate performance, and analyze results against hypotheses.
 
 ---
 
@@ -50,7 +84,6 @@ For each sample, select from the k=3 furthest classes in ViT embedding space.
 
 ### 4. Out-of-Distribution (5%)
 Images that do not belong to the CIFAR domain at all.
-![alt text](data_vit/ood_samples.png)
 Sample images from MIT Indoor Scenes dataset (67 categories: corridor, restaurant, bedroom, etc.) and randomly assign CIFAR labels.
 
 **Examples**: Indoor scene labeled as "airplane", office labeled as "dog"
@@ -344,40 +377,40 @@ This feature is the single strongest discriminator in practice because it direct
 
 ---
 # Hypothesis Testing and Results
-
+**Evaluation Setup**: All classifiers tested using 5-fold stratified cross-validation with standardized preprocessing and fixed random seed (42).
 
 **Metrics**: Per-class F1-score , macro F1, confusion matrix , feature importance 
 
-Classifiers:  Random Forest, XGBoost, Logistic Regression, SVM, KNN. All models were evaluated using 5-fold stratified cross-validation with consistent preprocessing (StandardScaler normalization) and random seed (42) for reproducibility.
-
-
+Classifiers:  Random Forest, XGBoost, Logistic Regression, SVM, KNN. 
+## Hypothesis-by-hypothesis interpretation
 ### H1: Geometric Features Detect Domain-Level and Magnitude Errors
 
-**Original Hypothesis**: Geometric features (embedding space structure from Clean ViT) should detect OOD  and Gross errors, but fail on Near-Miss and Clean-Hard.
-
-**Actual Results**:
-- **OOD**: F1 = **0.008**  → **CATASTROPHIC FAILURE**
-- **Gross**: F1 = **0.444**  → **MODERATE FAILURE**
-- **Near-Miss**: F1 = 0.601  → Better than predicted
-- **Clean-Hard**: F1 = 0.046  → Consistent with hypothesis
-
-The classifier cannot distinguish "low similarity because image is from wrong domain" from "low similarity because label is wrong but image is still CIFAR."
-
-### H2: Uncertainty Features Separate Medium-Tier Anomalies
-
-**Original Hypothesis**: Model confidence and entropy distinguish Random Flip  and Gross, but confuse Near-Miss with Clean-Hard.
-
-**Actual Results**:
-- **Random Flip**: F1 = **0.243**→ **UNDERPERFORMED**
-- **Gross**: F1 = **0.444** → **UNDERPERFORMED**
-- **Near-Miss**: F1 = **0.601**  → **OUTPERFORMED**
-- **Clean-Hard**: F1 = **0.046** → Consistent
-
-**Verdict**: ✓ **PARTIALLY SUPPORTED**
+The original expectation was that geometry features would work well for OOD and gross errors, but would struggle on near-miss and clean-hard samples. The binary results partly supported this pattern only in a weak sense.
+| H1 task | Expected | Best model | Best macro F1 | Observation |
+|---|---|---|---:|---|
+| OOD vs Clean | High  | Decision Tree  | 0.5165  | Weak support only. |
+| Gross vs Clean | Moderate to high  | Decision Tree  | 0.5193  | Weak support only. |
+| Near-Miss vs Clean | Low  | Decision Tree  | 0.5214  | Matches expectation, but still weak overall. |
+| Clean-Hard vs Clean | Low  | Decision Tree  | 0.5265  | Matches expectation, but still weak overall. |
 
 
-Uncertainty features performed better on Near-Miss than predicted, suggesting they **can** resolve some semantic ambiguity when combined with other features. However, they underperformed on Random Flip and Gross, likely because:
+![alt text](image-16.png)
+In simple terms, geometry did not clearly solve any of these tasks. Even the best scores are still barely above 0.5, so geometry features were not strongly separating one anomaly type from another. Both OOD and gross errors look identical in embedding space: they have low similarity to the assigned class. The model cannot tell the difference between domain shift and label errors based on geometry alone.
 
+### H2: Uncertainty Features Separate Medium-Tier Anomalies from Clean/Hard
+
+The uncertainty hypothesis expected better performance on medium-difficulty anomalies such as gross and random-flip, but confusion between near-miss and clean-hard. The results mostly match that story, although the absolute performance is still modest
+
+**Results**:
+| H2 task | Best model | Best macro F1 | Observation |
+|---|---|---:|---|
+| Gross vs Clean  | Logistic Regression  | 0.4939  | Partial success |
+| Random-Flip vs Clean  | KNN  | 0.4831  | Partial success |
+| Near-Miss vs Clean-Hard  | KNN  | 0.5018  | Partial success |
+
+
+![alt text](image-17.png)
+The results suggest that uncertainty features capture some signal for clearly problematic labels, yet they still cannot cleanly separate the hardest confusing pair.The Noisy ViT model learned to be less confident on some mislabeled samples, especially those that are semantically implausible. However, the model also became overconfident on near-miss samples (semantically plausible but wrong), which limits performance on harder cases.
 **Feature Importance**:
 ```
 Top uncertainty features:
@@ -393,12 +426,13 @@ Top uncertainty features:
 
 ### H3: Training Dynamics Break Near-Miss/Clean-Hard Degeneracy
 
-**Original Hypothesis**: Temporal learning patterns (forgetting events, late loss) distinguish Near-Miss (unstable learning, F1 gap > 0.20 vs Clean-Hard) from Clean-Hard (stable learning).
+The training dynamics hypothesis expected dynamics to break the tie between near-miss and clean-hard by using learning behavior over time. In practice, this did not happen convincingly
 
-**Actual Results**:
-- **Near-Miss**: F1 = **0.601** (multiclass)
-- **Clean-Hard**: F1 = **0.046** (multiclass)
-- **Gap**: 0.555→ **GAP EXISTS BUT...**
+**Results**:
+
+| H3 task | Expected | Best model | Best macro F1 | Observation |
+|---|---|---|---:|---|
+| Near-Miss vs Clean-Hard | High, better than H2  | KNN  | 0.5088  | Weak |
 
 **Feature Importance**:
 ```
@@ -407,37 +441,24 @@ dyn_late_loss:               2.5%
 dyn_learning_improvement:    0.000%
 dyn_cartography_confidence:  1.3%
 ```
+While H3 is slightly higher than the best H2 score numerically, the gain is tiny and does not support the original claim that dynamics would clearly break the degeneracy between near-miss and clean-hard.
+The Noisy ViT model was trained for only **9 epochs** with early stopping (stopped at epoch 2). This is likely too short for the dynamics features to capture meaningful patterns.  With only 9 epochs, samples didn't have time to transition from correct to incorrect predictions, so `dyn_forgetting_events` is zero for all samples. Features like `dyn_learning_improvement` show no variation across samples, making them useless for classification.
 
-**Verdict**: ❌ **HYPOTHESIS REJECTED**
-
-
-The Noisy ViT training was terminated at **epoch 9** via early stopping (patience=7, best epoch=2). This created two critical problems:
-
-1. **No forgetting events recorded**: With only 9 epochs, samples didn't have time to transition from correct → incorrect → correct, so `dyn_forgetting_events` is zero for all samples.
-
-2. **Dynamics features are constants**: Features like `dyn_learning_improvement` and `dyn_forgetting_events` show zero variance across samples, making them useless for classification.
 
 ### H4: Specialized Features for Corrupted and Ambiguous
 
-#### H4a: Corrupted Detection via Image Quality
+The specialized-signal hypothesis had two parts: image-quality features should detect corrupted samples, and label-agreement features should detect ambiguous samples. These two parts had very different outcomes.
+![alt text](image-19.png)
 
-**Original Hypothesis**: Image quality metrics (blur, contrast, high-frequency ratio) detect Corrupted samples with F1 > 0.80.
+| H4 task | Expected | Best model | Best macro F1 | Reading |
+|---|---|---|---:|---|
+| Corrupted vs Clean | High  | KNN  | 0.4794 | Failed |
+| Ambiguous vs Clean | High  | Decision Tree  | 0.9950    | success |
 
-**Actual Results**:
-- **Corrupted**: F1 = **0.001**→ **COMPLETE FAILURE**
+- For corrupted detection, the result was poor. Even the best binary model, KNN, reached only 0.4794, and the final multiclass F1 for corrupted was only 0.001.
+- For ambiguous detection, the result was the clearest success in the project. The best binary model, Decision Tree, reached 0.9950, and the final multiclass F1 for ambiguous was 0.715 This shows that human disagreement provides a strong and unique signal that the model-based features do not capture well on their own
 
-**Feature Importance**:
-```
-iq_blur:       5.0%
-iq_contrast:   5.0%
-iq_hf_ratio:   5.0%
-iq_brightness: (not in top features)
-```
-
-**Verdict**: ❌ **HYPOTHESIS REJECTED**
-
-
-**histogram overlap analysis** between Clean and Corrupted samples for the four image quality features revealed near-complete distribution overlap :
+**Histogram overlap analysis** between Clean and Corrupted samples for the four image quality features revealed near-complete distribution overlap :
 
 | Feature | Clean μ±σ | Corrupted μ±σ | Overlap % |
 |---------|-----------|---------------|-----------|
@@ -448,49 +469,38 @@ iq_brightness: (not in top features)
 
 The applied corruptions (σ=25 for blur, 0.3× contrast/brightness) were too mild to create a distinguishable signal at 32×32 resolution. The distributions of image quality features for Corrupted samples are almost identical to Clean samples, leading to near-zero F1.
 ![alt text](image-8.png)
-#### H4b: Ambiguous Detection via Human Confidence
 
-**Original Hypothesis**: Human annotation disagreement (`label_human_confidence`) detects Ambiguous samples with F1 > 0.70.
-
-**Actual Results**:
-- **Ambiguous**: F1 = **0.715** (expected >0.70) → ✓ **SUCCESS**
-
-**Feature Importance**:
-```
-label_human_confidence: 6.6% (rank 2)
-```
-
-**Verdict**: ✓ **HYPOTHESIS CONFIRMED**
-
-This is the **only hypothesis that succeeded as predicted**. Human annotation disagreement is a strong signal. External metadata (human annotations) provides orthogonal information to model-derived features, validating the value of CIFAR-N datasets for anomaly detection research.
-
----
-
-## Combined Model Performance
 
 ### Overall Results
 
-**Macro F1**: **0.3518**
+The full 8-class classification task reached a macro F1-score of 0.3518, which means overall performance is still limited when the model must separate all anomaly types at once.
 
-**Per-Class F1 (Actual vs Expected)**:
 
-| Anomaly Type | Actual F1 | 
-|--------------|-----------|
-| Clean | **0.756** |
-| Ambiguous | **0.715** | 
-| Near-Miss | **0.601** | 
-| Gross | **0.444** |
-| Random Flip | **0.243** | 
-| Clean-Hard | **0.046** |
-| OOD | **0.008** | 
-| Corrupted | **0.001** |
+
+![alt text](image-18.png)
 
 ## Conclusion
+```markdown
+================================================================================
+COMPLETE HYPOTHESIS TESTING SUMMARY
+================================================================================
+Hypothesis                    Task    Feature Type              Expected  F1-Score (LR) Status
+        H1            OOD vs Clean        Geometry                  HIGH       0.503737      ✗
+        H1          Gross vs Clean        Geometry         MODERATE-HIGH       0.501086      ✗
+        H1      Near-Miss vs Clean        Geometry                   LOW       0.514489      ✓
+        H1     Clean-Hard vs Clean        Geometry                   LOW       0.509917      ✓
+        H2          Gross vs Clean     Uncertainty              MODERATE       0.493896      ✓
+        H2    Random-Flip vs Clean     Uncertainty              MODERATE       0.471137      ✓
+        H2 Near-Miss vs Clean-Hard     Uncertainty                   LOW       0.490218      ✓
+        H3 Near-Miss vs Clean-Hard        Dynamics                  HIGH       0.482582      ✗
+        H4      Corrupted vs Clean   Image Quality                  HIGH       0.454901      ✗
+        H4      Ambiguous vs Clean Label Agreement                  HIGH       0.961574      ✓
 
-We tested a 4-hypothesis framework for detecting 8 anomaly types in noisy image classification datasets. Of the 4 hypotheses, **only 1 fully succeeded** (H4b - Ambiguous via human confidence), while the other 3 failed due to systematic design flaws:
+```
+We tested a 4-hypothesis framework for detecting 8 anomaly types in noisy image classification datasets. Of the 4 hypotheses, **only 1 fully succeeded** . So, the current pipeline is not broadly reliable across all anomaly types. It is strongest when it has access to an external signal that directly reflects ambiguity, somewhat useful for some label-noise cases, and still weak at separating subtle visual corruption, true domain shift, and very hard clean examples.
 
-- **H1 (Geometry)**: Failed due to label dependency in features
-- **H3 (Dynamics)**: Failed due to insufficient training epochs  
-- **H4a (Corrupted)**: Failed due to imperceptible corruption at 32×32 resolution
-
-
+## Author 
+```
+Nazia Tasnim
+BUID: U79654469
+```
