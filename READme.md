@@ -492,7 +492,7 @@ Hypothesis                    Task    Feature Type              Expected  F1-Sco
         H4      Ambiguous vs Clean Label Agreement                  HIGH       0.961574      ✓
 
 ```
-We tested a 4-hypothesis framework for detecting 8 anomaly types in noisy image classification datasets. Of the 4 hypotheses, **only 1 fully succeeded** . So, the current pipeline is not broadly reliable across all anomaly types. It is strongest when it has access to an external signal that directly reflects ambiguity, somewhat useful for some label-noise cases, and still weak at separating subtle visual corruption, true domain shift, and very hard clean examples.
+We tested a 4-hypothesis framework for detecting 8 anomaly types in noisy image classification datasets. Of the 4 hypotheses, **only a few succeeded** . So, the current pipeline is not broadly reliable across all anomaly types. It is strongest when it has access to an external signal that directly reflects ambiguity, somewhat useful for some label-noise cases, and still weak at separating subtle visual corruption, true domain shift, and very hard clean examples.
 
 ## Author 
 ```
